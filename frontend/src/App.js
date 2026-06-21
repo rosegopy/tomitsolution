@@ -542,7 +542,7 @@ const QuoteView = () => {
     "Use our instant calculator to value your used laptops, servers & IT equipment. Upload photos & inventory, get a transparent quote & doorstep pickup across India."
   );
   const [items, setItems] = useState([
-    { category: "Laptops", specification: "", condition: "Working - Excellent", quantity: 10, estimated_value: 12000 }
+    { category: "Laptops", specification: "", condition: "Working - Excellent", quantity: 1, estimated_value: 12000 }
   ]);
   
   const [clientName, setClientName] = useState("");
@@ -557,14 +557,7 @@ const QuoteView = () => {
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
 
-  const categories = [
-    { name: "Laptops", baseVal: 12000 },
-    { name: "Desktops", baseVal: 8000 },
-    { name: "Servers", baseVal: 45000 },
-    { name: "Networking Gears", baseVal: 20000 },
-    { name: "Printers", baseVal: 6000 },
-    { name: "Other ITAD Assets", baseVal: 5000 }
-  ];
+  const [categories, setCategories] = useState([]);
 
   const conditions = [
     { name: "Working - Like New", modifier: 1.2 },
@@ -574,8 +567,22 @@ const QuoteView = () => {
     { name: "Not Working - Parts Recovery Only", modifier: 0.25 }
   ];
 
+  useEffect(() => {
+    axios.get(`${API}/pricing`).then((res) => {
+      const cats = res.data.map((p) => ({ name: p.name, baseVal: p.base_value }));
+      setCategories(cats);
+      setItems((prev) => prev.map((it) => {
+        const catObj = cats.find((c) => c.name === it.category) || cats[0] || { baseVal: 5000 };
+        const condObj = conditions.find((c) => c.name === it.condition) || { modifier: 1.0 };
+        return { ...it, estimated_value: Math.round(catObj.baseVal * condObj.modifier) };
+      }));
+    }).catch(() => {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const handleAddItem = () => {
-    setItems([...items, { category: "Laptops", specification: "", condition: "Working - Excellent", quantity: 10, estimated_value: 12000 }]);
+    const firstCat = categories[0] || { name: "Laptops", baseVal: 12000 };
+    setItems([...items, { category: firstCat.name, specification: "", condition: "Working - Excellent", quantity: 1, estimated_value: firstCat.baseVal }]);
   };
 
   const handleRemoveItem = (index) => {
@@ -653,7 +660,7 @@ const QuoteView = () => {
       setCity("");
       setCustomMessage("");
       setUploadedFiles([]);
-      setItems([{ category: "Laptops", specification: "", condition: "Working - Excellent", quantity: 10, estimated_value: 12000 }]);
+      setItems([{ category: "Laptops", specification: "", condition: "Working - Excellent", quantity: 1, estimated_value: 12000 }]);
     } catch (err) {
       setErrorMsg(formatApiErrorDetail(err.response?.data?.detail) || "Failed to submit quote. Please check your inputs.");
     } finally {
@@ -735,8 +742,9 @@ const QuoteView = () => {
                     <Input 
                       type="number" 
                       min="1"
+                      max="1000"
                       value={item.quantity}
-                      onChange={(e) => handleItemChange(idx, "quantity", parseInt(e.target.value) || 1)}
+                      onChange={(e) => handleItemChange(idx, "quantity", Math.min(1000, Math.max(1, parseInt(e.target.value) || 1)))}
                       data-testid={`input-qty-${idx}`}
                     />
                   </div>
@@ -766,7 +774,7 @@ const QuoteView = () => {
           <form onSubmit={handleSubmit}>
             <Card className="border border-gray-200">
               <CardHeader className="bg-[#0B1B3D]/5 border-b border-gray-200">
-                <CardTitle className="font-heading font-extrabold text-lg text-[#0B1B3D]">2. Corporate Contact Details</CardTitle>
+                <CardTitle className="font-heading font-extrabold text-lg text-[#0B1B3D]">2. Client Details</CardTitle>
                 <CardDescription className="text-gray-500 text-sm">Please provide business details to claim this valuation. All reports are confidential.</CardDescription>
               </CardHeader>
               <CardContent className="p-6 space-y-4">
@@ -849,7 +857,7 @@ const QuoteView = () => {
                 </div>
 
                 <div className="space-y-1.5">
-                  <Label htmlFor="files">Upload Asset List or Photos (Excel, PDF, JPG, PNG)</Label>
+                  <Label htmlFor="files">Upload Asset List or Photos (Optional — Excel, PDF, JPG, PNG)</Label>
                   <Input 
                     id="files" 
                     type="file" 
@@ -1139,10 +1147,39 @@ const LoginView = () => {
   );
 };
 
+// Editable pricing row for the admin rate manager
+const PricingRow = ({ item, onSave, onDelete }) => {
+  const [value, setValue] = useState(item.base_value);
+  return (
+    <tr className="hover:bg-gray-50" data-testid={`pricing-row-${item.id}`}>
+      <td className="p-4 font-bold text-[#0B1B3D]">{item.name}</td>
+      <td className="p-4">
+        <Input
+          type="number"
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          className="max-w-[140px]"
+          data-testid={`rate-input-${item.id}`}
+        />
+      </td>
+      <td className="p-4 text-right space-x-2 whitespace-nowrap">
+        <Button size="sm" onClick={() => onSave(item.id, value)} className="bg-[#0B1B3D] hover:bg-[#162B5C] text-white" data-testid={`rate-save-${item.id}`}>
+          Save
+        </Button>
+        <Button size="sm" variant="outline" onClick={() => onDelete(item.id)} className="text-red-500 border-red-200 hover:bg-red-50" data-testid={`rate-delete-${item.id}`}>
+          <Trash className="h-4 w-4" />
+        </Button>
+      </td>
+    </tr>
+  );
+};
+
 // Admin Panel View
 const AdminView = () => {
   const [quotes, setQuotes] = useState([]);
   const [contacts, setContacts] = useState([]);
+  const [pricing, setPricing] = useState([]);
+  const [newRate, setNewRate] = useState({ name: "", base_value: "" });
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState("");
@@ -1162,14 +1199,16 @@ const AdminView = () => {
     setLoading(true);
     setErrorMsg("");
     try {
-      const [quotesRes, statsRes, contactsRes] = await Promise.all([
+      const [quotesRes, statsRes, contactsRes, pricingRes] = await Promise.all([
         axios.get(`${API}/quotes/admin`),
         axios.get(`${API}/quotes/admin/stats`),
-        axios.get(`${API}/contact/admin`)
+        axios.get(`${API}/contact/admin`),
+        axios.get(`${API}/pricing/admin`)
       ]);
       setQuotes(quotesRes.data);
       setStats(statsRes.data);
       setContacts(contactsRes.data);
+      setPricing(pricingRes.data);
     } catch (err) {
       setErrorMsg(formatApiErrorDetail(err.response?.data?.detail) || "Failed to load admin logs.");
     } finally {
@@ -1186,6 +1225,36 @@ const AdminView = () => {
       }
     } catch (err) {
       alert("Failed to update status. Please try again.");
+    }
+  };
+
+  const handleAddRate = async () => {
+    if (!newRate.name.trim() || !newRate.base_value) return;
+    try {
+      await axios.post(`${API}/pricing/admin`, { name: newRate.name.trim(), base_value: parseFloat(newRate.base_value) });
+      setNewRate({ name: "", base_value: "" });
+      fetchAdminData();
+    } catch (err) {
+      alert("Failed to add rate. Please try again.");
+    }
+  };
+
+  const handleUpdateRate = async (id, baseValue) => {
+    try {
+      await axios.patch(`${API}/pricing/admin/${id}`, { base_value: parseFloat(baseValue) });
+      fetchAdminData();
+    } catch (err) {
+      alert("Failed to update rate. Please try again.");
+    }
+  };
+
+  const handleDeleteRate = async (id) => {
+    if (!window.confirm("Delete this pricing item?")) return;
+    try {
+      await axios.delete(`${API}/pricing/admin/${id}`);
+      fetchAdminData();
+    } catch (err) {
+      alert("Failed to delete rate. Please try again.");
     }
   };
 
@@ -1239,6 +1308,52 @@ const AdminView = () => {
           </Card>
         </div>
       )}
+
+      {/* Valuation Rate Manager */}
+      <Card className="border border-gray-200 overflow-hidden" data-testid="pricing-management-card">
+        <CardHeader className="bg-[#0B1B3D]/5 border-b border-gray-200 p-6">
+          <CardTitle className="font-heading font-extrabold text-base text-[#0B1B3D]">Valuation Rate Manager</CardTitle>
+          <CardDescription className="text-gray-500 text-xs">Update the base price (₹) your team offers per product. These rates power the customer valuation calculator instantly.</CardDescription>
+        </CardHeader>
+        <CardContent className="p-6 space-y-6">
+          <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-end bg-gray-50 p-4 rounded-lg border border-gray-200">
+            <div className="sm:col-span-6 space-y-1.5">
+              <Label className="text-xs font-bold uppercase text-gray-500">Product / Spec Name</Label>
+              <Input placeholder="e.g. RAM 16GB DDR4" value={newRate.name} onChange={(e) => setNewRate({ ...newRate, name: e.target.value })} data-testid="new-rate-name" />
+            </div>
+            <div className="sm:col-span-4 space-y-1.5">
+              <Label className="text-xs font-bold uppercase text-gray-500">Base Price (₹)</Label>
+              <Input type="number" placeholder="e.g. 1200" value={newRate.base_value} onChange={(e) => setNewRate({ ...newRate, base_value: e.target.value })} data-testid="new-rate-value" />
+            </div>
+            <div className="sm:col-span-2">
+              <Button onClick={handleAddRate} className="w-full bg-[#10B981] hover:bg-[#059669] text-white" data-testid="add-rate-btn">
+                <Plus className="mr-1 h-4 w-4" /> Add
+              </Button>
+            </div>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm text-left border-collapse" data-testid="pricing-table">
+              <thead className="bg-gray-50 text-[#0B1B3D] font-bold uppercase text-xs border-b border-gray-200">
+                <tr>
+                  <th className="p-4">Product / Spec</th>
+                  <th className="p-4">Base Price (₹)</th>
+                  <th className="p-4 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {pricing.length === 0 ? (
+                  <tr><td colSpan="3" className="p-8 text-center text-gray-500">No pricing items yet. Add one above.</td></tr>
+                ) : (
+                  pricing.map((item) => (
+                    <PricingRow key={item.id} item={item} onSave={handleUpdateRate} onDelete={handleDeleteRate} />
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </CardContent>
+      </Card>
+
 
       {/* Main ledger table and detail split pane */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">

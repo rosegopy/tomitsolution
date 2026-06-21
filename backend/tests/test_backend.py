@@ -184,3 +184,119 @@ class TestContact:
     def test_contact_admin_requires_auth(self):
         r = requests.get(f"{BASE_URL}/api/contact/admin")
         assert r.status_code == 401
+
+
+# --- Pricing rate manager (iteration 2 feature) ---
+class TestPricing:
+    def test_public_pricing_list(self):
+        # Public endpoint - no auth required, returns seeded items
+        r = requests.get(f"{BASE_URL}/api/pricing")
+        assert r.status_code == 200
+        items = r.json()
+        assert isinstance(items, list)
+        assert len(items) >= 9, f"Expected seeded items >=9, got {len(items)}"
+        names = [i["name"] for i in items]
+        assert "Laptops" in names
+        assert "Servers" in names
+        # base_value should be numeric
+        laptop = next(i for i in items if i["name"] == "Laptops")
+        assert isinstance(laptop["base_value"], (int, float))
+
+    def test_admin_pricing_list_requires_auth(self):
+        r = requests.get(f"{BASE_URL}/api/pricing/admin")
+        assert r.status_code == 401
+
+    def test_admin_create_pricing_unauth(self):
+        r = requests.post(f"{BASE_URL}/api/pricing/admin",
+                          json={"name": "TEST_Unauth", "base_value": 100})
+        assert r.status_code == 401
+
+    def test_admin_pricing_crud_flow(self, admin_client, db):
+        # CREATE
+        payload = {"name": "TEST_PricingTablets", "base_value": 5555.0}
+        r = admin_client.post(f"{BASE_URL}/api/pricing/admin", json=payload)
+        assert r.status_code == 200, r.text
+        body = r.json()
+        assert body["name"] == "TEST_PricingTablets"
+        assert body["base_value"] == 5555.0
+        assert body["active"] is True
+        assert "id" in body
+        item_id = body["id"]
+
+        # GET via public list to verify persistence
+        r2 = requests.get(f"{BASE_URL}/api/pricing")
+        names = [i["name"] for i in r2.json()]
+        assert "TEST_PricingTablets" in names
+
+        # GET via admin list
+        r3 = admin_client.get(f"{BASE_URL}/api/pricing/admin")
+        assert r3.status_code == 200
+        admin_names = [i["name"] for i in r3.json()]
+        assert "TEST_PricingTablets" in admin_names
+
+        # UPDATE base_value
+        r4 = admin_client.patch(f"{BASE_URL}/api/pricing/admin/{item_id}",
+                                json={"base_value": 7777.0})
+        assert r4.status_code == 200
+        assert r4.json()["base_value"] == 7777.0
+
+        # Verify via public list
+        r5 = requests.get(f"{BASE_URL}/api/pricing")
+        updated = next(i for i in r5.json() if i["id"] == item_id)
+        assert updated["base_value"] == 7777.0
+
+        # DELETE
+        r6 = admin_client.delete(f"{BASE_URL}/api/pricing/admin/{item_id}")
+        assert r6.status_code == 200
+
+        # Verify removed
+        r7 = requests.get(f"{BASE_URL}/api/pricing")
+        ids = [i["id"] for i in r7.json()]
+        assert item_id not in ids
+
+    def test_admin_update_nonexistent(self, admin_client):
+        r = admin_client.patch(f"{BASE_URL}/api/pricing/admin/nonexistent-id",
+                               json={"base_value": 1})
+        assert r.status_code == 404
+
+    def test_admin_delete_nonexistent(self, admin_client):
+        r = admin_client.delete(f"{BASE_URL}/api/pricing/admin/nonexistent-id")
+        assert r.status_code == 404
+
+
+# --- Quote submission WITHOUT uploaded file (iteration 2 feature) ---
+class TestQuoteNoFile:
+    def test_quote_no_files_succeeds(self, db):
+        payload = {
+            "client_name": "TEST_NoFileClient",
+            "company_name": "TEST_NoFile",
+            "email": "tnf@example.com",
+            "phone": "9000000000",
+            "city": "Bengaluru",
+            "equipment_items": [
+                {"category": "Servers", "specification": "Dell R740",
+                 "condition": "Working - Good", "quantity": 1, "estimated_value": 45000.0}
+            ],
+            # uploaded_files omitted entirely
+        }
+        r = requests.post(f"{BASE_URL}/api/quotes", json=payload)
+        assert r.status_code == 200, r.text
+        body = r.json()
+        assert body["estimated_total"] == 45000.0
+        assert body["uploaded_files"] == []
+
+    def test_quote_quantity_high(self):
+        # Backend should accept up to whatever frontend sends; frontend clamps to 1000
+        payload = {
+            "client_name": "TEST_QtyClient",
+            "email": "qty@example.com",
+            "phone": "9111111111",
+            "city": "Pune",
+            "equipment_items": [
+                {"category": "Laptops", "specification": "Bulk",
+                 "condition": "Working - Good", "quantity": 1000, "estimated_value": 12000.0}
+            ],
+        }
+        r = requests.post(f"{BASE_URL}/api/quotes", json=payload)
+        assert r.status_code == 200, r.text
+        assert r.json()["estimated_total"] == 12000.0 * 1000

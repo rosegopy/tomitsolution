@@ -425,6 +425,71 @@ async def get_contacts_admin(_: dict = Depends(get_admin_user)):
     contacts = await cursor.to_list(1000)
     return [ContactResponse(id=c["_id"], name=c["name"], email=c["email"], message=c["message"], status=c.get("status", "New"), created_at=c["created_at"]) for c in contacts]
 
+
+# Pricing Rate Endpoints (admin-managed valuation rates)
+DEFAULT_PRICING = [
+    {"name": "Laptops", "base_value": 12000},
+    {"name": "Desktops", "base_value": 8000},
+    {"name": "Servers", "base_value": 45000},
+    {"name": "Networking Gears", "base_value": 20000},
+    {"name": "Printers", "base_value": 6000},
+    {"name": "RAM 8GB DDR4", "base_value": 800},
+    {"name": "SSD 256GB", "base_value": 1500},
+    {"name": "SSD 512GB", "base_value": 2800},
+    {"name": "Other ITAD Assets", "base_value": 5000},
+]
+
+class PricingCreate(BaseModel):
+    name: str
+    base_value: float
+
+class PricingUpdate(BaseModel):
+    name: Optional[str] = None
+    base_value: Optional[float] = None
+    active: Optional[bool] = None
+
+class PricingItem(BaseModel):
+    id: str
+    name: str
+    base_value: float
+    active: bool
+
+@api_router.get("/pricing", response_model=List[PricingItem])
+async def get_pricing():
+    cursor = db.pricing.find({"active": True}).sort("created_at", 1)
+    items = await cursor.to_list(1000)
+    return [PricingItem(id=i["_id"], name=i["name"], base_value=i["base_value"], active=i.get("active", True)) for i in items]
+
+@api_router.get("/pricing/admin", response_model=List[PricingItem])
+async def get_pricing_admin(_: dict = Depends(get_admin_user)):
+    cursor = db.pricing.find().sort("created_at", 1)
+    items = await cursor.to_list(1000)
+    return [PricingItem(id=i["_id"], name=i["name"], base_value=i["base_value"], active=i.get("active", True)) for i in items]
+
+@api_router.post("/pricing/admin", response_model=PricingItem)
+async def create_pricing(data: PricingCreate, _: dict = Depends(get_admin_user)):
+    item_id = str(uuid.uuid4())
+    doc = {"_id": item_id, "name": data.name, "base_value": data.base_value, "active": True, "created_at": datetime.now(timezone.utc).isoformat()}
+    await db.pricing.insert_one(doc)
+    return PricingItem(id=item_id, name=data.name, base_value=data.base_value, active=True)
+
+@api_router.patch("/pricing/admin/{item_id}", response_model=PricingItem)
+async def update_pricing(item_id: str, data: PricingUpdate, _: dict = Depends(get_admin_user)):
+    updates = {k: v for k, v in data.model_dump().items() if v is not None}
+    if not updates:
+        raise HTTPException(status_code=400, detail="No fields to update")
+    result = await db.pricing.find_one_and_update({"_id": item_id}, {"$set": updates}, return_document=True)
+    if not result:
+        raise HTTPException(status_code=404, detail="Pricing item not found")
+    return PricingItem(id=result["_id"], name=result["name"], base_value=result["base_value"], active=result.get("active", True))
+
+@api_router.delete("/pricing/admin/{item_id}")
+async def delete_pricing(item_id: str, _: dict = Depends(get_admin_user)):
+    result = await db.pricing.delete_one({"_id": item_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Pricing item not found")
+    return {"message": "Deleted"}
+
 # Include main router
 app.include_router(api_router)
 
@@ -449,6 +514,18 @@ async def seed_admin():
         logger.info("Object storage initialized")
     except Exception as e:
         logger.error(f"Storage init failed: {e}")
+
+    # Seed default pricing rates (only if empty)
+    if await db.pricing.count_documents({}) == 0:
+        for p in DEFAULT_PRICING:
+            await db.pricing.insert_one({
+                "_id": str(uuid.uuid4()),
+                "name": p["name"],
+                "base_value": p["base_value"],
+                "active": True,
+                "created_at": datetime.now(timezone.utc).isoformat()
+            })
+        logger.info("Seeded default pricing rates")
     
     # Seed Admin
     admin_email = os.environ.get("ADMIN_EMAIL", "admin@reitindia.com")
