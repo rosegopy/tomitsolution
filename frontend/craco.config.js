@@ -86,6 +86,21 @@ if (isDevServer) {
   try {
     const { withVisualEdits } = require("@emergentbase/visual-edits/craco");
     webpackConfig = withVisualEdits(webpackConfig);
+    
+    // Completely sanitise DevServer setup options to avoid Webpack Dev Server v4 schema conflicts
+    const originalDevServer = webpackConfig.devServer;
+    webpackConfig.devServer = (devServerConfig) => {
+      let config = devServerConfig;
+      if (typeof originalDevServer === "function") {
+        config = originalDevServer(config);
+      }
+      if (config) {
+        delete config.onBeforeSetupMiddleware;
+        delete config.onAfterSetupMiddleware;
+        delete config.https;
+      }
+      return config;
+    };
   } catch (err) {
     if (err.code === 'MODULE_NOT_FOUND' && err.message.includes('@emergentbase/visual-edits/craco')) {
       console.warn(
