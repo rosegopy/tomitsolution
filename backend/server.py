@@ -155,7 +155,7 @@ class AssetQuoteItem(BaseModel):
     category: str
     specification: str
     condition: str
-    quantity: int
+    quantity: int = Field(ge=1, le=1000)
     estimated_value: float
 
 class UploadedFileRef(BaseModel):
@@ -441,11 +441,11 @@ DEFAULT_PRICING = [
 
 class PricingCreate(BaseModel):
     name: str
-    base_value: float
+    base_value: float = Field(gt=0)
 
 class PricingUpdate(BaseModel):
     name: Optional[str] = None
-    base_value: Optional[float] = None
+    base_value: Optional[float] = Field(default=None, gt=0)
     active: Optional[bool] = None
 
 class PricingItem(BaseModel):
