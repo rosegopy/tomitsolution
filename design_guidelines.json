@@ -1,0 +1,90 @@
+{
+  "theme": "light",
+  "archetype": "Archetype 4 (Swiss & High-Contrast)",
+  "vibe": "Professional, authoritative, trustworthy, clear. Enterprise-grade IT asset recovery.",
+  "colors": {
+    "background": "#F8F9FA",
+    "surface": "#FFFFFF",
+    "primary": "#0B1B3D",
+    "primary_hover": "#162B5C",
+    "accent": "#10B981",
+    "accent_hover": "#059669",
+    "text_main": "#111827",
+    "text_muted": "#4B5563",
+    "border": "#E5E7EB",
+    "glass_background": "rgba(255, 255, 255, 0.8)",
+    "glass_border": "rgba(255, 255, 255, 0.4)"
+  },
+  "typography": {
+    "headings": {
+      "family": "Manrope, sans-serif",
+      "weight": "800",
+      "tracking": "tracking-tight"
+    },
+    "body": {
+      "family": "Inter, sans-serif",
+      "weight": "400",
+      "leading": "leading-relaxed"
+    },
+    "scale": {
+      "h1": "text-4xl sm:text-5xl lg:text-6xl",
+      "h2": "text-2xl sm:text-3xl lg:text-4xl",
+      "h3": "text-xl sm:text-2xl",
+      "h4": "text-lg sm:text-xl",
+      "body": "text-base",
+      "small": "text-sm"
+    }
+  },
+  "layout": {
+    "spacing_system": "Generous spacing: p-6 to p-12 for standard sections, py-20 for major structural sections.",
+    "marketing_grid": "MODE A: The 'Tetris' Grid (Bento style). Base grid-cols-1 md:grid-cols-8 lg:grid-cols-12 with wide gap-8 to gap-12. Asymmetric distribution.",
+    "dashboard_grid": "MODE B: The 'Control Room' Grid. Base grid-cols-1 md:grid-cols-3 lg:grid-cols-4 with tight gap-4 or gap-6. Every pixel utilized.",
+    "header": "Crystal Glassmorphism over content (backdrop-blur-xl bg-white/80) with a 1px delicate inner stroke, OR solid white with border-b. Ensure z-50.",
+    "footer": "Dark mode footer (bg-primary) with massive spacing (py-24) to create contrast shift from light body."
+  },
+  "components": {
+    "cards": "Flat solid surfaces with subtle border-border/40, no heavy drop shadows default. On hover: slight lift (-translate-y-1) and shadow-lg.",
+    "buttons": "Primary CTA uses Accent (#10B981) for high visibility on valuation/sell actions. Secondary uses Primary (#0B1B3D). Sharp or max 8px rounded corners.",
+    "inputs": "Shadcn based. Never use native inputs. Require generous padding and clear focus states (focus:ring-2 focus:ring-accent).",
+    "animations": "Hover states on interactive elements. Smooth transitions (transition-all duration-200). Subtle entrance staggering for feature bento grids."
+  },
+  "images": [
+    {
+      "category": "Hero / Corporate IT",
+      "url": "https://images.pexels.com/photos/17489157/pexels-photo-17489157.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+      "description": "Server rack / IT infrastructure, to be used in the background of the hero section with a gradient overlay (bg-white/70 or white-to-transparent) to ensure text contrast."
+    },
+    {
+      "category": "Services / Hardware",
+      "url": "https://images.pexels.com/photos/37730212/pexels-photo-37730212.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+      "description": "Close-up of server racks for 'Sell Your IT Equipment' sections."
+    },
+    {
+      "category": "Features / Asset Recovery",
+      "url": "https://images.pexels.com/photos/6893890/pexels-photo-6893890.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+      "description": "Office laptops showing corporate IT usage, suitable for 'What We Buy' or asset category catalog."
+    },
+    {
+      "category": "Process / Trust",
+      "url": "https://images.pexels.com/photos/7693692/pexels-photo-7693692.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+      "description": "Business professionals meeting, representing fair valuation, trust, and enterprise relationships."
+    }
+  ],
+  "accessibility_and_testing": {
+    "contrast": "Ensure all text meets APCA/WCAG AA minimums. White text on primary navy, dark text on white/gray.",
+    "testing_attributes": "All interactive elements (buttons, forms, links) MUST have data-testid attributes (e.g., data-testid='get-quote-button')."
+  },
+  "icons_and_assets": {
+    "library": "lucide-react",
+    "usage": "Use crisp, stroke-based icons for enterprise clarity. Stroke width 1.5."
+  },
+  "instructions_to_main_agent": [
+    "Strictly follow the color palette. Do NOT use default Tailwind colors like slate or blue if they conflict with the specified hex values.",
+    "Use Manrope for headings and Inter for body text. DO NOT use Inter for headings.",
+    "Construct the multi-step Quotation Lead Form using Shadcn primitives (Form, Input, Select, FileUpload simulation).",
+    "Implement the 'Interactive Valuation Calculator' with clear typography and the Accent green for the final value.",
+    "For the Admin Dashboard, switch layout to 'Control Room Grid', maximizing data density with Shadcn tables and charts.",
+    "Ensure the hero image has an overlay that does not exceed 50% opacity, allowing the IT infrastructure to be visible but keeping the H1 highly legible.",
+    "Add data-testid to every clickable element."
+  ]
+}
