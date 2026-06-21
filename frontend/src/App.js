@@ -36,6 +36,20 @@ function formatApiErrorDetail(detail) {
   return String(detail);
 }
 
+// Lightweight SEO hook for per-page title & meta description
+const useSEO = (title, description) => {
+  useEffect(() => {
+    document.title = title;
+    let meta = document.querySelector('meta[name="description"]');
+    if (!meta) {
+      meta = document.createElement("meta");
+      meta.setAttribute("name", "description");
+      document.head.appendChild(meta);
+    }
+    meta.setAttribute("content", description);
+  }, [title, description]);
+};
+
 // Nav Header Component
 const Header = () => {
   const { user, logout } = useAuth();
@@ -59,7 +73,7 @@ const Header = () => {
             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#0B1B3D] text-[#10B981]">
               <Cpu className="h-6 w-6" />
             </div>
-            <span className="font-heading font-extrabold text-xl text-[#0B1B3D] tracking-tight">ReIT <span className="text-[#10B981]">India</span></span>
+            <span className="font-heading font-extrabold text-xl text-[#0B1B3D] tracking-tight">TomIT <span className="text-[#10B981]">Solution</span></span>
           </Link>
         </div>
 
@@ -170,7 +184,7 @@ const Footer = () => {
             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/10 text-[#10B981]">
               <Cpu className="h-6 w-6" />
             </div>
-            <span className="font-heading font-extrabold text-xl tracking-tight">ReIT <span className="text-[#10B981]">India</span></span>
+            <span className="font-heading font-extrabold text-xl tracking-tight">TomIT <span className="text-[#10B981]">Solution</span></span>
           </div>
           <p className="text-gray-300 text-sm leading-relaxed">
             India&apos;s trusted enterprise-grade IT asset disposition (ITAD) partner. We purchase end-of-life laptops, servers, and infrastructure from companies, banks, and universities nationwide.
@@ -202,16 +216,16 @@ const Footer = () => {
         <div>
           <h4 className="font-heading font-bold text-lg mb-4 text-[#10B981]">Corporate Office</h4>
           <p className="text-sm text-gray-300 leading-relaxed">
-            ReIT India Tech Park<br />
-            Level 5, Sector V, Salt Lake City<br />
-            Kolkata, WB - 700091<br />
-            <span className="block mt-2 font-semibold">📞 +91 33 4001 8899</span>
-            <span className="block font-semibold">✉️ corporate@reitindia.com</span>
+            TomIT Solution<br />
+            Sector V, Salt Lake City<br />
+            Kolkata, West Bengal - 700091<br />
+            <span className="block mt-2 font-semibold">+91 90000 00000</span>
+            <span className="block font-semibold">info@tomitsolution.in</span>
           </p>
         </div>
       </div>
       <div className="container mx-auto mt-16 pt-8 border-t border-white/10 text-center text-sm text-gray-400">
-        <p>&copy; {new Date().getFullYear()} ReIT India. All Rights Reserved. ISO 27001 & R2v3 Certified ITAD Partner.</p>
+        <p>&copy; {new Date().getFullYear()} TomIT Solution. All Rights Reserved. ISO 27001 & R2v3 Certified ITAD Partner.</p>
       </div>
     </footer>
   );
@@ -219,6 +233,10 @@ const Footer = () => {
 
 // Home View
 const HomeView = () => {
+  useSEO(
+    "TomIT Solution | Sell Used Laptops, Servers & IT Equipment Across India",
+    "Get fair market value for used laptops, computers, servers, networking gear & printers. Secure data erasure, doorstep pickup & fast payment across India. Free valuation."
+  );
   return (
     <div className="space-y-24 pb-20">
       {/* Hero Section */}
@@ -281,7 +299,7 @@ const HomeView = () => {
       <section className="container mx-auto px-4 sm:px-6">
         <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
           <h2 className="font-heading font-extrabold text-2xl sm:text-3xl lg:text-4xl text-[#0B1B3D]">
-            The ReIT India Corporate Edge
+            The TomIT Solution Corporate Edge
           </h2>
           <p className="text-gray-600 text-lg leading-relaxed">
             Maximize return on investment with a streamlined, compliant, and professional asset disposition strategy.
@@ -377,16 +395,20 @@ const HomeView = () => {
 
 // About Us View
 const AboutView = () => {
+  useSEO(
+    "About TomIT Solution | Trusted IT Asset Buyback Partner in India",
+    "TomIT Solution provides professional, institutional-grade IT Asset Disposition across India with certified data destruction, fair pricing & nationwide logistics."
+  );
   return (
     <div className="container mx-auto px-4 sm:px-6 py-20 space-y-20 text-left">
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
         <div className="lg:col-span-7 space-y-6">
-          <Badge className="bg-[#10B981] text-white">About ReIT India</Badge>
+          <Badge className="bg-[#10B981] text-white">About TomIT Solution</Badge>
           <h1 className="font-heading font-extrabold text-3xl sm:text-4xl lg:text-5xl text-[#0B1B3D] tracking-tight">
             Enterprise Integrity & Sustainable ITAD Solutions
           </h1>
           <p className="text-gray-600 text-base leading-relaxed">
-            Founded with the explicit mandate to provide professional, institutional-grade IT Asset Disposition (ITAD) across India, ReIT India ensures high residual returns on your retired technology. We are NOT scrap dealers. We specialize in components recycling, server refurbishment, and environmental stewardship.
+            Founded with the explicit mandate to provide professional, institutional-grade IT Asset Disposition (ITAD) across India, TomIT Solution ensures high residual returns on your retired technology. We are NOT scrap dealers. We specialize in components recycling, server refurbishment, and environmental stewardship.
           </p>
           <p className="text-gray-600 text-base leading-relaxed">
             Our operational centers are strategically positioned across major metros including Mumbai, Bangalore, NCR, and Kolkata, allowing us to manage high-volume logistics and rapid hardware audits seamlessly. We protect your company reputation with certifiable data destruction and absolute compliance with both national and international e-waste mandates.
@@ -419,6 +441,10 @@ const AboutView = () => {
 
 // Services View
 const ServicesView = () => {
+  useSEO(
+    "Our Services | Corporate IT Buyback & Data Sanitization | TomIT Solution",
+    "Corporate asset buybacks, secure datacenter liquidation, R2v3 e-waste logistics & NIST 800-88 data sanitization for businesses & institutions across India."
+  );
   return (
     <div className="container mx-auto px-4 sm:px-6 py-20 text-left space-y-16">
       <div className="max-w-3xl space-y-4">
@@ -427,7 +453,7 @@ const ServicesView = () => {
           Enterprise IT Asset Services
         </h1>
         <p className="text-gray-600 text-lg leading-relaxed">
-          ReIT India offers customizable operational tracks for secure asset collection, sorting, auditing, value estimation, data scrubbing, and ethical product lifecycle handling.
+          TomIT Solution offers customizable operational tracks for secure asset collection, sorting, auditing, value estimation, data scrubbing, and ethical product lifecycle handling.
         </p>
       </div>
 
@@ -450,6 +476,10 @@ const ServicesView = () => {
 
 // Sell Your Equipment View
 const SellView = () => {
+  useSEO(
+    "Sell Your IT Equipment | What We Buy | TomIT Solution",
+    "We buy used laptops, desktops, servers, networking hardware & printers from companies, banks, schools & government across India. See what we purchase."
+  );
   return (
     <div className="container mx-auto px-4 sm:px-6 py-20 text-left space-y-16">
       <div className="max-w-3xl space-y-4">
@@ -507,6 +537,10 @@ const SellView = () => {
 
 // Valuation Calculator & Quotation Form
 const QuoteView = () => {
+  useSEO(
+    "Get a Free IT Asset Valuation | TomIT Solution",
+    "Use our instant calculator to value your used laptops, servers & IT equipment. Upload photos & inventory, get a transparent quote & doorstep pickup across India."
+  );
   const [items, setItems] = useState([
     { category: "Laptops", specification: "", condition: "Working - Excellent", quantity: 10, estimated_value: 12000 }
   ]);
@@ -518,6 +552,7 @@ const QuoteView = () => {
   const [city, setCity] = useState("");
   const [customMessage, setCustomMessage] = useState("");
   const [uploadedFiles, setUploadedFiles] = useState([]);
+  const [uploading, setUploading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
@@ -564,11 +599,32 @@ const QuoteView = () => {
   // Calculate total valuation
   const totalValuation = items.reduce((sum, item) => sum + (item.estimated_value * item.quantity), 0);
 
-  // File mock upload simulation
-  const handleFileUpload = (e) => {
+  const handleFileUpload = async (e) => {
     const files = Array.from(e.target.files);
-    const mockPaths = files.map(file => `mock_uploads/${Date.now()}_${file.name}`);
-    setUploadedFiles([...uploadedFiles, ...mockPaths]);
+    if (files.length === 0) return;
+    setUploading(true);
+    setErrorMsg("");
+    try {
+      const uploaded = [];
+      for (const file of files) {
+        const formData = new FormData();
+        formData.append("file", file);
+        const res = await axios.post(`${API}/uploads`, formData, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
+        uploaded.push(res.data);
+      }
+      setUploadedFiles((prev) => [...prev, ...uploaded]);
+    } catch (err) {
+      setErrorMsg(formatApiErrorDetail(err.response?.data?.detail) || "File upload failed. Please try again.");
+    } finally {
+      setUploading(false);
+      e.target.value = "";
+    }
+  };
+
+  const removeUploadedFile = (id) => {
+    setUploadedFiles((prev) => prev.filter((f) => f.id !== id));
   };
 
   const handleSubmit = async (e) => {
@@ -793,18 +849,40 @@ const QuoteView = () => {
                 </div>
 
                 <div className="space-y-1.5">
-                  <Label htmlFor="files">Upload Asset List or Photos (Excel, PDF, JPG)</Label>
+                  <Label htmlFor="files">Upload Asset List or Photos (Excel, PDF, JPG, PNG)</Label>
                   <Input 
                     id="files" 
                     type="file" 
                     multiple 
+                    accept=".jpg,.jpeg,.png,.gif,.webp,.pdf,.csv,.xls,.xlsx,.doc,.docx"
                     onChange={handleFileUpload}
+                    disabled={uploading}
                     className="cursor-pointer"
                     data-testid="quote-file-upload"
                   />
+                  {uploading && (
+                    <div className="text-xs text-[#10B981] font-semibold mt-1 flex items-center gap-1.5" data-testid="upload-progress">
+                      <RefreshCw className="h-3.5 w-3.5 animate-spin" /> Uploading files...
+                    </div>
+                  )}
                   {uploadedFiles.length > 0 && (
-                    <div className="text-xs text-gray-500 mt-1">
-                      Uploaded files: {uploadedFiles.map(f => f.split('_').slice(1).join('_')).join(', ')}
+                    <div className="mt-2 space-y-1.5" data-testid="uploaded-files-list">
+                      {uploadedFiles.map((f) => (
+                        <div key={f.id} className="flex items-center justify-between bg-gray-50 border border-gray-200 rounded px-3 py-1.5 text-xs">
+                          <span className="flex items-center gap-1.5 text-gray-700 truncate">
+                            <FileSpreadsheet className="h-3.5 w-3.5 text-[#10B981] shrink-0" />
+                            <span className="truncate">{f.filename}</span>
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => removeUploadedFile(f.id)}
+                            className="text-red-500 hover:text-red-700 ml-2 shrink-0"
+                            data-testid={`remove-file-${f.id}`}
+                          >
+                            <X className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
+                      ))}
                     </div>
                   )}
                 </div>
@@ -856,7 +934,7 @@ const QuoteView = () => {
             <Card className="border border-gray-200 p-6 space-y-4">
               <h4 className="font-heading font-bold text-[#0B1B3D]">Compliance Note</h4>
               <p className="text-gray-600 text-xs leading-relaxed">
-                ReIT India guarantees complete professional certification of sanitization conforming to ISO 14001, 45001, and 27001 data sanitization. Hardware is audited and cleared securely under active supervision.
+                TomIT Solution guarantees complete professional certification of sanitization conforming to ISO 14001, 45001, and 27001 data sanitization. Hardware is audited and cleared securely under active supervision.
               </p>
             </Card>
           </div>
@@ -868,17 +946,32 @@ const QuoteView = () => {
 
 // Contact Us View
 const ContactView = () => {
+  useSEO(
+    "Contact TomIT Solution | Sell Your IT Equipment Across India",
+    "Get in touch with TomIT Solution for corporate IT asset buyback, bulk valuations & doorstep pickup. Nationwide service with metro logistics hubs across India."
+  );
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setSubmitted(true);
-    setName("");
-    setEmail("");
-    setMessage("");
+    setSubmitting(true);
+    setErrorMsg("");
+    try {
+      await axios.post(`${API}/contact`, { name, email, message });
+      setSubmitted(true);
+      setName("");
+      setEmail("");
+      setMessage("");
+    } catch (err) {
+      setErrorMsg(formatApiErrorDetail(err.response?.data?.detail) || "Failed to send message. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -886,7 +979,7 @@ const ContactView = () => {
       <div className="max-w-3xl space-y-4">
         <Badge className="bg-[#10B981] text-white">Reach Our Team</Badge>
         <h1 className="font-heading font-extrabold text-3xl sm:text-4xl lg:text-5xl text-[#0B1B3D] tracking-tight">
-          Connect with ReIT India
+          Connect with TomIT Solution
         </h1>
         <p className="text-gray-600 text-lg leading-relaxed">
           Need custom enterprise pricing models or high-volume physical inventory auditing? Speak directly with our asset collection engineers.
@@ -908,7 +1001,7 @@ const ContactView = () => {
               </p>
               <p className="flex items-center gap-3">
                 <Mail className="h-5 w-5 text-[#10B981]" />
-                <span>corporate@reitindia.com</span>
+                <span>info@tomitsolution.in</span>
               </p>
             </div>
           </div>
@@ -936,6 +1029,11 @@ const ContactView = () => {
                     <CheckCircle2 className="h-5 w-5" /> Thank you for reaching out! We&apos;ve received your request and will reply within 4 hours.
                   </div>
                 )}
+                {errorMsg && (
+                  <div className="bg-red-50 text-red-600 p-4 rounded-lg font-semibold text-sm mb-4" data-testid="contact-error-banner">
+                    {errorMsg}
+                  </div>
+                )}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
                     <Label htmlFor="contact-name">Name</Label>
@@ -952,8 +1050,8 @@ const ContactView = () => {
                 </div>
               </CardContent>
               <CardFooter className="bg-gray-50 p-6 flex justify-end border-t border-gray-200">
-                <Button type="submit" className="bg-[#0B1B3D] hover:bg-[#162B5C] text-white" data-testid="contact-submit-btn">
-                  Send Message
+                <Button type="submit" disabled={submitting} className="bg-[#0B1B3D] hover:bg-[#162B5C] text-white" data-testid="contact-submit-btn">
+                  {submitting ? "Sending..." : "Send Message"}
                 </Button>
               </CardFooter>
             </form>
@@ -1044,6 +1142,7 @@ const LoginView = () => {
 // Admin Panel View
 const AdminView = () => {
   const [quotes, setQuotes] = useState([]);
+  const [contacts, setContacts] = useState([]);
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState("");
@@ -1063,12 +1162,14 @@ const AdminView = () => {
     setLoading(true);
     setErrorMsg("");
     try {
-      const [quotesRes, statsRes] = await Promise.all([
+      const [quotesRes, statsRes, contactsRes] = await Promise.all([
         axios.get(`${API}/quotes/admin`),
-        axios.get(`${API}/quotes/admin/stats`)
+        axios.get(`${API}/quotes/admin/stats`),
+        axios.get(`${API}/contact/admin`)
       ]);
       setQuotes(quotesRes.data);
       setStats(statsRes.data);
+      setContacts(contactsRes.data);
     } catch (err) {
       setErrorMsg(formatApiErrorDetail(err.response?.data?.detail) || "Failed to load admin logs.");
     } finally {
@@ -1255,6 +1356,38 @@ const AdminView = () => {
                   </div>
                 )}
 
+                {/* uploaded files */}
+                {selectedQuote.uploaded_files && selectedQuote.uploaded_files.length > 0 && (
+                  <div className="space-y-3 border-b border-gray-100 pb-4" data-testid="lead-uploaded-files">
+                    <h4 className="font-heading font-bold text-sm text-[#0B1B3D]">Uploaded Photos &amp; Files ({selectedQuote.uploaded_files.length})</h4>
+                    <div className="grid grid-cols-3 gap-2">
+                      {selectedQuote.uploaded_files.map((f) => {
+                        const isImage = (f.content_type || "").startsWith("image/");
+                        const fileUrl = `${API}/files/${f.id}`;
+                        return (
+                          <a
+                            key={f.id}
+                            href={fileUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="block border border-gray-200 rounded-lg overflow-hidden hover:border-[#10B981] transition-colors"
+                            data-testid={`lead-file-${f.id}`}
+                          >
+                            {isImage ? (
+                              <img src={fileUrl} alt={f.filename} className="h-20 w-full object-cover" />
+                            ) : (
+                              <div className="h-20 w-full flex flex-col items-center justify-center bg-gray-50 p-1">
+                                <FileSpreadsheet className="h-6 w-6 text-[#0B1B3D]" />
+                                <span className="text-[9px] text-gray-500 truncate w-full text-center mt-1">{f.filename}</span>
+                              </div>
+                            )}
+                          </a>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
                 {/* status action controls */}
                 <div className="space-y-3">
                   <h4 className="font-heading font-bold text-sm text-[#0B1B3D]">Update Audit Status</h4>
@@ -1275,6 +1408,44 @@ const AdminView = () => {
           </div>
         )}
       </div>
+
+      {/* Contact Messages */}
+      <Card className="border border-gray-200 overflow-hidden" data-testid="contact-messages-card">
+        <CardHeader className="bg-[#0B1B3D]/5 border-b border-gray-200 p-6">
+          <CardTitle className="font-heading font-extrabold text-base text-[#0B1B3D]">Contact Inquiries</CardTitle>
+          <CardDescription className="text-gray-500 text-xs">General messages submitted via the Contact Us page</CardDescription>
+        </CardHeader>
+        <CardContent className="p-0">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm text-left border-collapse" data-testid="contacts-table">
+              <thead className="bg-gray-50 text-[#0B1B3D] font-bold uppercase text-xs border-b border-gray-200">
+                <tr>
+                  <th className="p-4">Name</th>
+                  <th className="p-4">Email</th>
+                  <th className="p-4">Message</th>
+                  <th className="p-4">Received</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {contacts.length === 0 ? (
+                  <tr>
+                    <td colSpan="4" className="p-8 text-center text-gray-500">No contact inquiries yet.</td>
+                  </tr>
+                ) : (
+                  contacts.map((c) => (
+                    <tr key={c.id} className="hover:bg-gray-50" data-testid={`contact-row-${c.id}`}>
+                      <td className="p-4 font-bold text-[#0B1B3D]">{c.name}</td>
+                      <td className="p-4 text-gray-600">{c.email}</td>
+                      <td className="p-4 text-gray-600 max-w-md"><div className="line-clamp-2">{c.message}</div></td>
+                      <td className="p-4 text-gray-500 text-xs whitespace-nowrap">{new Date(c.created_at).toLocaleDateString()}</td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };
@@ -1294,7 +1465,7 @@ const ProtectedRoute = ({ children }) => {
     return (
       <div className="container mx-auto px-4 py-24 text-center">
         <RefreshCw className="animate-spin h-8 w-8 text-[#10B981] mx-auto mb-4" />
-        <p className="text-gray-500 text-sm font-semibold">ReIT Securing Cryptography Vault...</p>
+        <p className="text-gray-500 text-sm font-semibold">TomIT Solution securing your session...</p>
       </div>
     );
   }

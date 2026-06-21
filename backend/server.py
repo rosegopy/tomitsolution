@@ -1,4 +1,4 @@
-from fastapi import FastAPI, APIRouter, HTTPException, Depends, Request, Response, status
+from fastapi import FastAPI, APIRouter, HTTPException, Depends, Request, Response, status, File, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -7,6 +7,7 @@ import logging
 import jwt
 import bcrypt
 import uuid
+import requests
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
 from pydantic import BaseModel, Field, ConfigDict, BeforeValidator
@@ -34,6 +35,49 @@ app = FastAPI(title="IT Asset Recovery API")
 # JWT configuration
 JWT_SECRET = os.environ.get("JWT_SECRET", "e9bc7e7b8c2db76da5465e6df7db0675bf3d89ef678d4c927f98e79cbfa600a9")
 JWT_ALGORITHM = "HS256"
+
+# Object Storage configuration
+STORAGE_URL = "https://integrations.emergentagent.com/objstore/api/v1/storage"
+EMERGENT_KEY = os.environ.get("EMERGENT_LLM_KEY")
+APP_NAME = "tomit-solution"
+storage_key = None
+
+MIME_TYPES = {
+    "jpg": "image/jpeg", "jpeg": "image/jpeg", "png": "image/png",
+    "gif": "image/gif", "webp": "image/webp", "pdf": "application/pdf",
+    "csv": "text/csv", "xls": "application/vnd.ms-excel",
+    "xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    "doc": "application/msword",
+    "docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+}
+
+def init_storage():
+    global storage_key
+    if storage_key:
+        return storage_key
+    resp = requests.post(f"{STORAGE_URL}/init", json={"emergent_key": EMERGENT_KEY}, timeout=30)
+    resp.raise_for_status()
+    storage_key = resp.json()["storage_key"]
+    return storage_key
+
+def put_object(path: str, data: bytes, content_type: str) -> dict:
+    key = init_storage()
+    resp = requests.put(
+        f"{STORAGE_URL}/objects/{path}",
+        headers={"X-Storage-Key": key, "Content-Type": content_type},
+        data=data, timeout=120
+    )
+    resp.raise_for_status()
+    return resp.json()
+
+def get_object(path: str):
+    key = init_storage()
+    resp = requests.get(
+        f"{STORAGE_URL}/objects/{path}",
+        headers={"X-Storage-Key": key}, timeout=60
+    )
+    resp.raise_for_status()
+    return resp.content, resp.headers.get("Content-Type", "application/octet-stream")
 
 # Helper for Pydantic ObjectId coercion
 PyObjectId = Annotated[str, BeforeValidator(str)]
@@ -114,6 +158,12 @@ class AssetQuoteItem(BaseModel):
     quantity: int
     estimated_value: float
 
+class UploadedFileRef(BaseModel):
+    id: str
+    filename: str
+    storage_path: str
+    content_type: Optional[str] = None
+
 class QuoteCreate(BaseModel):
     client_name: str
     company_name: Optional[str] = None
@@ -122,7 +172,7 @@ class QuoteCreate(BaseModel):
     city: str
     equipment_items: List[AssetQuoteItem]
     custom_message: Optional[str] = None
-    uploaded_files: Optional[List[str]] = None
+    uploaded_files: Optional[List[UploadedFileRef]] = None
 
 class QuoteResponse(BaseModel):
     id: str
@@ -133,7 +183,7 @@ class QuoteResponse(BaseModel):
     city: str
     equipment_items: List[AssetQuoteItem]
     custom_message: Optional[str] = None
-    uploaded_files: List[str] = []
+    uploaded_files: List[UploadedFileRef] = []
     status: str
     created_at: str
     estimated_total: float
@@ -180,7 +230,7 @@ async def login(credentials: UserLogin, response: Response):
         key="access_token",
         value=access_token,
         httponly=True,
-        secure=False,  # Set to True in production with SSL
+        secure=True,
         samesite="lax",
         max_age=3600,
         path="/"
@@ -225,7 +275,7 @@ async def create_quote(quote_data: QuoteCreate):
         "city": quote_data.city,
         "equipment_items": [item.model_dump() for item in quote_data.equipment_items],
         "custom_message": quote_data.custom_message,
-        "uploaded_files": quote_data.uploaded_files or [],
+        "uploaded_files": [f.model_dump() for f in quote_data.uploaded_files] if quote_data.uploaded_files else [],
         "status": "Pending Evaluation",
         "created_at": datetime.now(timezone.utc).isoformat(),
         "estimated_total": estimated_total
@@ -293,6 +343,88 @@ async def get_quote_stats():
         "category_breakdown": category_breakdown
     }
 
+# File Upload Endpoints
+ALLOWED_EXT = {"jpg", "jpeg", "png", "gif", "webp", "pdf", "csv", "xls", "xlsx", "doc", "docx"}
+MAX_FILE_SIZE = 10 * 1024 * 1024  # 10MB
+
+@api_router.post("/uploads")
+async def upload_file(file: UploadFile = File(...)):
+    ext = file.filename.rsplit(".", 1)[-1].lower() if "." in file.filename else ""
+    if ext not in ALLOWED_EXT:
+        raise HTTPException(status_code=400, detail="Unsupported file type. Allowed: images, PDF, Excel, Word.")
+    data = await file.read()
+    if len(data) > MAX_FILE_SIZE:
+        raise HTTPException(status_code=400, detail="File too large. Maximum size is 10MB per file.")
+    file_id = str(uuid.uuid4())
+    content_type = file.content_type or MIME_TYPES.get(ext, "application/octet-stream")
+    path = f"{APP_NAME}/uploads/{file_id}.{ext}"
+    try:
+        result = put_object(path, data, content_type)
+    except Exception as e:
+        logger.error(f"File upload failed: {e}")
+        raise HTTPException(status_code=500, detail="File upload failed. Please try again.")
+    storage_path = result.get("path", path)
+    await db.files.insert_one({
+        "_id": file_id,
+        "storage_path": storage_path,
+        "original_filename": file.filename,
+        "content_type": content_type,
+        "size": len(data),
+        "is_deleted": False,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    })
+    return {"id": file_id, "filename": file.filename, "storage_path": storage_path, "content_type": content_type}
+
+@api_router.get("/files/{file_id}")
+async def download_file(file_id: str, _: dict = Depends(get_admin_user)):
+    record = await db.files.find_one({"_id": file_id, "is_deleted": False})
+    if not record:
+        raise HTTPException(status_code=404, detail="File not found")
+    try:
+        data, content_type = get_object(record["storage_path"])
+    except Exception as e:
+        logger.error(f"File download failed: {e}")
+        raise HTTPException(status_code=500, detail="Could not retrieve file")
+    return Response(
+        content=data,
+        media_type=record.get("content_type", content_type),
+        headers={"Content-Disposition": f'inline; filename="{record.get("original_filename", file_id)}"'}
+    )
+
+# Contact Message Endpoints
+class ContactCreate(BaseModel):
+    name: str
+    email: str
+    message: str
+
+class ContactResponse(BaseModel):
+    id: str
+    name: str
+    email: str
+    message: str
+    status: str
+    created_at: str
+
+@api_router.post("/contact", response_model=ContactResponse)
+async def create_contact(data: ContactCreate):
+    contact_id = str(uuid.uuid4())
+    doc = {
+        "_id": contact_id,
+        "name": data.name,
+        "email": data.email,
+        "message": data.message,
+        "status": "New",
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db.contacts.insert_one(doc)
+    return ContactResponse(id=contact_id, name=data.name, email=data.email, message=data.message, status="New", created_at=doc["created_at"])
+
+@api_router.get("/contact/admin", response_model=List[ContactResponse])
+async def get_contacts_admin(_: dict = Depends(get_admin_user)):
+    cursor = db.contacts.find().sort("created_at", -1)
+    contacts = await cursor.to_list(1000)
+    return [ContactResponse(id=c["_id"], name=c["name"], email=c["email"], message=c["message"], status=c.get("status", "New"), created_at=c["created_at"]) for c in contacts]
+
 # Include main router
 app.include_router(api_router)
 
@@ -310,6 +442,13 @@ app.add_middleware(
 async def seed_admin():
     # Ensure indexes
     await db.users.create_index("email", unique=True)
+
+    # Initialize object storage
+    try:
+        init_storage()
+        logger.info("Object storage initialized")
+    except Exception as e:
+        logger.error(f"Storage init failed: {e}")
     
     # Seed Admin
     admin_email = os.environ.get("ADMIN_EMAIL", "admin@reitindia.com")
