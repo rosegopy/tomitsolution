@@ -264,6 +264,21 @@ class TestPricing:
         assert r.status_code == 404
 
 
+# --- Video AI analysis ---
+class TestVideoAnalyze:
+    def test_video_analyze_rejects_bad_extension(self):
+        files = {"file": ("bad.exe", io.BytesIO(b"abc"), "application/octet-stream")}
+        r = requests.post(f"{BASE_URL}/api/video/analyze", files=files)
+        assert r.status_code == 400
+        assert "Unsupported video type" in r.text
+
+    def test_video_analyze_rejects_empty_file(self):
+        files = {"file": ("empty.mp4", io.BytesIO(b""), "video/mp4")}
+        r = requests.post(f"{BASE_URL}/api/video/analyze", files=files)
+        assert r.status_code == 400
+        assert "empty" in r.text.lower()
+
+
 # --- Quote submission WITHOUT uploaded file (iteration 2 feature) ---
 class TestQuoteNoFile:
     def test_quote_no_files_succeeds(self, db):

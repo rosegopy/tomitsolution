@@ -5,7 +5,7 @@ import axios from "axios";
 import { 
   Laptop, Cpu, ShieldCheck, CreditCard, Truck, BadgePercent, CheckCircle2, 
   Menu, X, Send, Award, Users, RefreshCw, BarChart2, Plus, Trash, Eye, 
-  Building2, ArrowRight, Download, FileSpreadsheet, Lock, Sparkles, MapPin, Phone, Mail
+  Building2, ArrowRight, Download, FileSpreadsheet, Lock, Sparkles, MapPin, Phone, Mail, Video, Wand2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
@@ -553,6 +553,8 @@ const QuoteView = () => {
   const [customMessage, setCustomMessage] = useState("");
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const [uploading, setUploading] = useState(false);
+  const [videoAnalyzing, setVideoAnalyzing] = useState(false);
+  const [videoAnalysis, setVideoAnalysis] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
@@ -634,6 +636,47 @@ const QuoteView = () => {
     setUploadedFiles((prev) => prev.filter((f) => f.id !== id));
   };
 
+  const handleVideoAnalyze = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setVideoAnalyzing(true);
+    setErrorMsg("");
+    setVideoAnalysis(null);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const res = await axios.post(`${API}/video/analyze`, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      setVideoAnalysis(res.data);
+      if (res.data.uploaded_file) {
+        setUploadedFiles((prev) => [...prev, res.data.uploaded_file]);
+      }
+    } catch (err) {
+      setErrorMsg(formatApiErrorDetail(err.response?.data?.detail) || "AI video analysis failed. Please try again.");
+    } finally {
+      setVideoAnalyzing(false);
+      e.target.value = "";
+    }
+  };
+
+  const applyVideoAnalysis = () => {
+    if (!videoAnalysis?.equipment_items?.length) return;
+    const mapped = videoAnalysis.equipment_items.map((item) => {
+      const catObj = categories.find((c) => c.name === item.category) || categories[0] || { baseVal: 5000 };
+      const condObj = conditions.find((c) => c.name === item.condition) || { modifier: 1.0 };
+      return {
+        category: catObj.name,
+        specification: item.specification,
+        condition: item.condition,
+        quantity: item.quantity,
+        estimated_value: Math.round(catObj.baseVal * condObj.modifier),
+      };
+    });
+    setItems(mapped);
+    setErrorMsg("");
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitting(true);
@@ -660,6 +703,7 @@ const QuoteView = () => {
       setCity("");
       setCustomMessage("");
       setUploadedFiles([]);
+      setVideoAnalysis(null);
       setItems([{ category: "Laptops", specification: "", condition: "Working - Excellent", quantity: 1, estimated_value: 12000 }]);
     } catch (err) {
       setErrorMsg(formatApiErrorDetail(err.response?.data?.detail) || "Failed to submit quote. Please check your inputs.");
@@ -683,6 +727,80 @@ const QuoteView = () => {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
         {/* Dynamic Calculator & Lead Form */}
         <div className="lg:col-span-8 space-y-8">
+          <Card className="border border-[#10B981]/30 bg-gradient-to-br from-[#10B981]/5 to-white" data-testid="ai-video-analyzer-card">
+            <CardHeader className="border-b border-[#10B981]/20">
+              <div className="flex items-center gap-2">
+                <Sparkles className="h-5 w-5 text-[#10B981]" />
+                <CardTitle className="font-heading font-extrabold text-lg text-[#0B1B3D]">AI Video Equipment Scanner</CardTitle>
+              </div>
+              <CardDescription className="text-gray-600 text-sm">
+                Upload a short video of your IT equipment. Our AI will identify laptops, servers, networking gear, and more, then auto-fill your valuation inventory.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="p-6 space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                <Input
+                  id="video-analyze"
+                  type="file"
+                  accept=".mp4,.mov,.webm,.avi,.mkv,video/*"
+                  onChange={handleVideoAnalyze}
+                  disabled={videoAnalyzing}
+                  className="cursor-pointer"
+                  data-testid="quote-video-upload"
+                />
+                {videoAnalyzing && (
+                  <div className="text-sm text-[#10B981] font-semibold flex items-center gap-2" data-testid="video-analyze-progress">
+                    <RefreshCw className="h-4 w-4 animate-spin" /> AI is analyzing your video...
+                  </div>
+                )}
+              </div>
+              <p className="text-xs text-gray-500">Supported: MP4, MOV, WEBM, AVI, MKV — up to 50MB. Best results with a well-lit, steady clip showing each device clearly.</p>
+
+              {videoAnalysis && (
+                <div className="rounded-lg border border-[#10B981]/30 bg-white p-4 space-y-4" data-testid="video-analysis-results">
+                  <div className="flex items-start gap-3">
+                    <Video className="h-5 w-5 text-[#10B981] shrink-0 mt-0.5" />
+                    <div className="space-y-1">
+                      <p className="font-bold text-sm text-[#0B1B3D]">AI Analysis Summary</p>
+                      <p className="text-sm text-gray-600">{videoAnalysis.summary}</p>
+                    </div>
+                  </div>
+
+                  {videoAnalysis.equipment_items?.length > 0 ? (
+                    <>
+                      <div className="space-y-2">
+                        {videoAnalysis.equipment_items.map((item, idx) => (
+                          <div key={idx} className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-gray-200 bg-gray-50 px-3 py-2 text-xs">
+                            <div>
+                              <span className="font-bold text-[#0B1B3D]">{item.category}</span>
+                              <span className="text-gray-500"> — {item.specification}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Badge variant="outline" className="text-[10px]">{item.quantity} unit{item.quantity > 1 ? "s" : ""}</Badge>
+                              <Badge className="bg-[#0B1B3D]/10 text-[#0B1B3D] text-[10px]">{item.confidence} confidence</Badge>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                      <Button
+                        type="button"
+                        onClick={applyVideoAnalysis}
+                        className="bg-[#10B981] hover:bg-[#059669] text-white"
+                        data-testid="apply-video-analysis-btn"
+                      >
+                        <Wand2 className="mr-2 h-4 w-4" /> Apply AI Results to Inventory
+                      </Button>
+                    </>
+                  ) : (
+                    <p className="text-sm text-amber-700 bg-amber-50 border border-amber-100 rounded-md p-3">
+                      No IT equipment was detected in this video. Try recording closer to the devices or upload photos instead.
+                    </p>
+                  )}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
           <Card className="border border-gray-200">
             <CardHeader className="bg-[#0B1B3D]/5 border-b border-gray-200">
               <CardTitle className="font-heading font-extrabold text-lg text-[#0B1B3D]">1. Define Asset Inventory</CardTitle>

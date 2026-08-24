@@ -12,6 +12,7 @@ from datetime import datetime, timezone, timedelta
 from pathlib import Path
 from pydantic import BaseModel, Field, ConfigDict, BeforeValidator
 from typing import List, Optional, Annotated
+from video_ai import VIDEO_MIME_TYPES, analyze_equipment_video
 
 # Initialize dotenv and path
 ROOT_DIR = Path(__file__).parent
@@ -344,8 +345,9 @@ async def get_quote_stats():
     }
 
 # File Upload Endpoints
-ALLOWED_EXT = {"jpg", "jpeg", "png", "gif", "webp", "pdf", "csv", "xls", "xlsx", "doc", "docx"}
+ALLOWED_EXT = {"jpg", "jpeg", "png", "gif", "webp", "pdf", "csv", "xls", "xlsx", "doc", "docx", "mp4", "mov", "webm", "avi", "mkv"}
 MAX_FILE_SIZE = 10 * 1024 * 1024  # 10MB
+MAX_VIDEO_SIZE = 50 * 1024 * 1024  # 50MB for AI video analysis
 
 @api_router.post("/uploads")
 async def upload_file(file: UploadFile = File(...)):
@@ -374,6 +376,94 @@ async def upload_file(file: UploadFile = File(...)):
         "created_at": datetime.now(timezone.utc).isoformat()
     })
     return {"id": file_id, "filename": file.filename, "storage_path": storage_path, "content_type": content_type}
+
+
+class VideoAnalysisItem(BaseModel):
+    category: str
+    specification: str
+    condition: str
+    quantity: int
+    confidence: str = "medium"
+    notes: str = ""
+
+
+class VideoAnalysisResponse(BaseModel):
+    summary: str
+    equipment_items: List[VideoAnalysisItem]
+    uploaded_file: Optional[UploadedFileRef] = None
+    raw_model: str
+
+
+@api_router.post("/video/analyze", response_model=VideoAnalysisResponse)
+async def analyze_video(file: UploadFile = File(...)):
+    ext = file.filename.rsplit(".", 1)[-1].lower() if "." in file.filename else ""
+    if ext not in VIDEO_MIME_TYPES:
+        raise HTTPException(
+            status_code=400,
+            detail="Unsupported video type. Allowed: MP4, MOV, WEBM, AVI, MKV.",
+        )
+
+    data = await file.read()
+    if len(data) > MAX_VIDEO_SIZE:
+        raise HTTPException(status_code=400, detail="Video too large. Maximum size is 50MB.")
+    if len(data) == 0:
+        raise HTTPException(status_code=400, detail="Uploaded video is empty.")
+
+    mime_type = file.content_type or VIDEO_MIME_TYPES[ext]
+    api_key = EMERGENT_KEY
+    if not api_key:
+        raise HTTPException(status_code=503, detail="AI video analysis is not configured on this server.")
+
+    pricing_cursor = db.pricing.find({"active": True}).sort("created_at", 1)
+    pricing_items = await pricing_cursor.to_list(1000)
+    categories = [item["name"] for item in pricing_items]
+
+    try:
+        analysis = await analyze_equipment_video(
+            api_key=api_key,
+            video_bytes=data,
+            mime_type=mime_type,
+            categories=categories,
+            filename=file.filename,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    except Exception as exc:
+        logger.error(f"Video analysis failed: {exc}")
+        raise HTTPException(status_code=500, detail="Video analysis failed. Please try again.") from exc
+
+    uploaded_file = None
+    file_id = str(uuid.uuid4())
+    path = f"{APP_NAME}/uploads/{file_id}.{ext}"
+    try:
+        result = put_object(path, data, mime_type)
+        storage_path = result.get("path", path)
+        await db.files.insert_one({
+            "_id": file_id,
+            "storage_path": storage_path,
+            "original_filename": file.filename,
+            "content_type": mime_type,
+            "size": len(data),
+            "is_deleted": False,
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "source": "ai_video_analysis",
+        })
+        uploaded_file = UploadedFileRef(
+            id=file_id,
+            filename=file.filename,
+            storage_path=storage_path,
+            content_type=mime_type,
+        )
+    except Exception as exc:
+        logger.warning(f"Video storage after analysis failed: {exc}")
+
+    return VideoAnalysisResponse(
+        summary=analysis["summary"],
+        equipment_items=[VideoAnalysisItem(**item) for item in analysis["equipment_items"]],
+        uploaded_file=uploaded_file,
+        raw_model=analysis["raw_model"],
+    )
+
 
 @api_router.get("/files/{file_id}")
 async def download_file(file_id: str, _: dict = Depends(get_admin_user)):
