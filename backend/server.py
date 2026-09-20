@@ -430,6 +430,7 @@ async def get_contacts_admin(_: dict = Depends(get_admin_user)):
 DEFAULT_PRICING = [
     {"name": "Laptops", "base_value": 12000},
     {"name": "Desktops", "base_value": 8000},
+    {"name": "Monitors & Displays", "base_value": 3500},
     {"name": "Servers", "base_value": 45000},
     {"name": "Networking Gears", "base_value": 20000},
     {"name": "Printers", "base_value": 6000},
@@ -515,7 +516,7 @@ async def seed_admin():
     except Exception as e:
         logger.error(f"Storage init failed: {e}")
 
-    # Seed default pricing rates (only if empty)
+    # Seed default pricing rates (empty DB) and backfill any missing defaults
     if await db.pricing.count_documents({}) == 0:
         for p in DEFAULT_PRICING:
             await db.pricing.insert_one({
@@ -526,6 +527,18 @@ async def seed_admin():
                 "created_at": datetime.now(timezone.utc).isoformat()
             })
         logger.info("Seeded default pricing rates")
+    else:
+        for p in DEFAULT_PRICING:
+            existing = await db.pricing.find_one({"name": p["name"]})
+            if not existing:
+                await db.pricing.insert_one({
+                    "_id": str(uuid.uuid4()),
+                    "name": p["name"],
+                    "base_value": p["base_value"],
+                    "active": True,
+                    "created_at": datetime.now(timezone.utc).isoformat()
+                })
+                logger.info(f"Backfilled pricing category: {p['name']}")
     
     # Seed Admin
     admin_email = os.environ.get("ADMIN_EMAIL", "admin@reitindia.com")

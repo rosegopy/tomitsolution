@@ -198,6 +198,7 @@ class TestPricing:
         names = [i["name"] for i in items]
         assert "Laptops" in names
         assert "Servers" in names
+        assert "Monitors & Displays" in names
         # base_value should be numeric
         laptop = next(i for i in items if i["name"] == "Laptops")
         assert isinstance(laptop["base_value"], (int, float))
