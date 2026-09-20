@@ -5,7 +5,8 @@ import axios from "axios";
 import { 
   Laptop, Cpu, ShieldCheck, CreditCard, Truck, BadgePercent, CheckCircle2, 
   Menu, X, Send, Award, Users, RefreshCw, BarChart2, Plus, Trash, Eye, 
-  Building2, ArrowRight, Download, FileSpreadsheet, Lock, Sparkles, MapPin, Phone, Mail
+  Building2, ArrowRight, Download, FileSpreadsheet, Lock, Sparkles, MapPin, Phone, Mail,
+  Monitor, Image, Tv, Camera, Presentation
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
@@ -234,8 +235,8 @@ const Footer = () => {
 // Home View
 const HomeView = () => {
   useSEO(
-    "TomIT Solution | Sell Used Laptops, Servers & IT Equipment Across India",
-    "Get fair market value for used laptops, computers, servers, networking gear & printers. Secure data erasure, doorstep pickup & fast payment across India. Free valuation."
+    "TomIT Solution | Sell Used Laptops, Monitors, Servers & IT Equipment Across India",
+    "Get fair market value for used laptops, computers, monitors, servers, networking gear & printers. Secure data erasure, doorstep pickup & fast payment across India. Free valuation."
   );
   return (
     <div className="space-y-24 pb-20">
@@ -257,7 +258,7 @@ const HomeView = () => {
               Fair Market Value for <span className="text-[#10B981]">Enterprise IT Assets</span>
             </h1>
             <p className="text-lg text-gray-300 max-w-2xl leading-relaxed">
-              We purchase used laptops, computers, servers, networking hardware, and printers from corporate, government, educational, and institutional partners across India. Get instant valuations and seamless logistics.
+              We purchase used laptops, computers, monitors, servers, networking hardware, and printers from corporate, government, educational, and institutional partners across India. Get instant valuations and seamless logistics.
             </p>
             <div className="flex flex-wrap gap-4 pt-4">
               <Link to="/quote" data-testid="hero-get-quote-link">
@@ -336,7 +337,7 @@ const HomeView = () => {
               From desktop workstation fleets to whole backend data centers, we help modern firms recover equity on working, decommissioned, and end-of-service machines.
             </p>
             <ul className="space-y-3">
-              {["Corporate Notebooks & Workstations", "Enterprise Servers & Rack Infrastructure", "Core Routers, Switches & Firewall units", "Industrial & Office Printer fleets"].map((item, idx) => (
+              {["Corporate Notebooks & Workstations", "LCD / LED Monitors & Displays", "Enterprise Servers & Rack Infrastructure", "Core Routers, Switches & Firewall units", "Industrial & Office Printer fleets"].map((item, idx) => (
                 <li key={idx} className="flex items-center gap-2 font-bold text-[#0B1B3D]">
                   <CheckCircle2 className="h-5 w-5 text-[#10B981]" />
                   <span>{item}</span>
@@ -354,6 +355,7 @@ const HomeView = () => {
           <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-6">
             {[
               { category: "Laptops & Desktops", count: "10+ units minimum", note: "i5, i7, Xeon models" },
+              { category: "Monitors & Displays", count: "Bulk LCD / LED panels", note: "19\"–32\" office & conference screens" },
               { category: "Datacenter Servers", count: "Any rack configurations", note: "Dell, HP, Cisco, Lenovo" },
               { category: "Networking Hardware", count: "Switches, Firewalls, SANs", note: "Juniper, Fortinet, Cisco" },
               { category: "Printers & Peripherals", count: "High-volume laser printer fleets", note: "HP, Canon, Xerox" }
@@ -478,7 +480,7 @@ const ServicesView = () => {
 const SellView = () => {
   useSEO(
     "Sell Your IT Equipment | What We Buy | TomIT Solution",
-    "We buy used laptops, desktops, servers, networking hardware & printers from companies, banks, schools & government across India. See what we purchase."
+    "We buy used laptops, desktops, monitors, servers, networking hardware & printers from companies, banks, schools & government across India. See what we purchase."
   );
   return (
     <div className="container mx-auto px-4 sm:px-6 py-20 text-left space-y-16">
@@ -492,14 +494,15 @@ const SellView = () => {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
         {[
           { title: "Workstations & Laptops", items: ["Core i3 / i5 / i7 / i9 Laptops", "MacBook Pro & Air Models", "All-in-One Workstations", "Enterprise PC Mini-Towers"], moq: "Min Quantity: 10 units" },
+          { title: "Monitors & Displays", items: ["19\"–24\" LCD / LED office panels", "27\"–32\" widescreen displays", "Conference room monitors", "HDMI / DisplayPort models"], moq: "Min Quantity: 10 units" },
           { title: "Datacenter Hardware", items: ["1U/2U Rackmount Servers", "Blade chassis arrays", "Network Attached Storage (NAS)", "ECC Memory & RAID Cards"], moq: "Min Quantity: 3 units" },
           { title: "Networking Gears", items: ["Cisco & Juniper Switches", "Enterprise Firewalls", "Wireless Access Controllers", "Fiber Optic Transceivers"], moq: "Min Quantity: 5 units" },
           { title: "Peripherals & Printers", items: ["Industrial Laser Printers", "Multi-function copiers", "Corporate VOIP Phones", "Uninterrupted Power Supplies"], moq: "Min Quantity: 5 units" }
         ].map((cat, idx) => (
-          <div key={idx} className="bg-white border border-gray-200 p-6 rounded-xl flex flex-col justify-between shadow-sm space-y-4">
+          <div key={idx} className="bg-white border border-gray-200 p-6 rounded-xl flex flex-col justify-between shadow-sm space-y-4" data-testid={`sell-category-${idx}`}>
             <div className="space-y-3">
               <h3 className="font-heading font-bold text-lg text-[#0B1B3D] border-b border-gray-100 pb-2">{cat.title}</h3>
               <ul className="space-y-2">
@@ -517,6 +520,58 @@ const SellView = () => {
           </div>
         ))}
       </div>
+
+      {/* Surplus monitors: reuse ideas + sell path */}
+      <section className="space-y-8" data-testid="monitor-reuse-section">
+        <div className="max-w-3xl space-y-3">
+          <Badge className="bg-[#0B1B3D] text-white">Got Extra Monitors?</Badge>
+          <h2 className="font-heading font-extrabold text-2xl sm:text-3xl text-[#0B1B3D] tracking-tight">
+            Photo frames & other smart options for surplus screens
+          </h2>
+          <p className="text-gray-600 leading-relaxed">
+            Offices often end up with piles of working LCD/LED monitors after refreshes. You can keep a few for creative reuse — or recover cash on the bulk lot with TomIT Solution.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {[
+            { icon: Image, title: "Digital photo frame", desc: "Mount a spare panel on a wall or stand, connect a mini-PC or USB stick, and run a looping family or office photo slideshow." },
+            { icon: Tv, title: "Digital signage / TV", desc: "Turn lobby or reception screens into menus, notices, dashboards, or welcome boards with simple media-player software." },
+            { icon: Camera, title: "CCTV / security viewer", desc: "Pair older monitors with DVR/NVR systems as dedicated security viewing stations in control rooms." },
+            { icon: Presentation, title: "Meeting & training rooms", desc: "Reuse larger panels as secondary presentation displays, training lab screens, or shared whiteboard companions." },
+            { icon: Monitor, title: "Spare & remote work kits", desc: "Keep a small reserve for replacements, dual-screen setups, or work-from-home kits before buying new." },
+            { icon: CreditCard, title: "Sell the bulk lot to us", desc: "When you have many monitors, selling is usually the cleanest option — fair valuation, doorstep pickup, and fast payment across India." }
+          ].map((opt, idx) => (
+            <div
+              key={idx}
+              className="bg-white border border-gray-200 p-6 rounded-xl space-y-3 shadow-sm hover:-translate-y-1 hover:shadow-md transition-all duration-200"
+              data-testid={`monitor-option-${idx}`}
+            >
+              <div className="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-[#10B981]/10 text-[#10B981]">
+                <opt.icon className="h-5 w-5" strokeWidth={1.5} />
+              </div>
+              <h3 className="font-heading font-bold text-base text-[#0B1B3D]">{opt.title}</h3>
+              <p className="text-sm text-gray-600 leading-relaxed">{opt.desc}</p>
+            </div>
+          ))}
+        </div>
+
+        <div className="bg-[#0B1B3D] text-white p-8 rounded-2xl grid grid-cols-1 lg:grid-cols-3 gap-8 items-center">
+          <div className="lg:col-span-2 space-y-3">
+            <h3 className="font-heading font-extrabold text-xl">Ready to sell your monitor fleet?</h3>
+            <p className="text-gray-300 text-sm leading-relaxed">
+              Select <span className="text-[#10B981] font-semibold">Monitors & Displays</span> in our free valuation calculator, add quantity and condition, and get an instant estimate — then book doorstep pickup.
+            </p>
+          </div>
+          <div className="lg:text-right">
+            <Link to="/quote" data-testid="monitor-get-quote-cta">
+              <Button className="bg-[#10B981] hover:bg-[#059669] text-white w-full lg:w-auto font-bold py-6 px-8 text-base">
+                Value My Monitors
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </section>
 
       <div className="bg-gray-50 p-8 rounded-2xl border border-gray-200 grid grid-cols-1 lg:grid-cols-3 gap-8 items-center">
         <div className="lg:col-span-2 space-y-3">
@@ -539,7 +594,7 @@ const SellView = () => {
 const QuoteView = () => {
   useSEO(
     "Get a Free IT Asset Valuation | TomIT Solution",
-    "Use our instant calculator to value your used laptops, servers & IT equipment. Upload photos & inventory, get a transparent quote & doorstep pickup across India."
+    "Use our instant calculator to value your used laptops, monitors, servers & IT equipment. Upload photos & inventory, get a transparent quote & doorstep pickup across India."
   );
   const [items, setItems] = useState([
     { category: "Laptops", specification: "", condition: "Working - Excellent", quantity: 1, estimated_value: 12000 }
