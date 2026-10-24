@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Microtek Retailer Price List — Heavy Duty Inverter Battery</title>
+  <style>
+    @page { size: A4; margin: 6mm; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      background: #e8f2fa;
+      color: #0b1b3d;
+      max-width: 980px;
+      margin: 0 auto;
+    }
+    .page {
+      background: #e8f2fa;
+      padding: 14px 12px 0;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #d9e8f5;
+      padding: 10px 14px;
+      margin-bottom: 0;
+    }
+    .logo {
+      position: relative;
+      padding-left: 10px;
+    }
+    .logo .name {
+      font-size: 28px;
+      font-weight: 800;
+      font-style: italic;
+      color: #1a4f9c;
+      letter-spacing: 0.5px;
+      line-height: 1;
+    }
+    .logo .swoosh {
+      position: absolute;
+      left: -2px;
+      top: -2px;
+      width: 22px;
+      height: 32px;
+      border: 2.5px solid #e31937;
+      border-right: none;
+      border-radius: 28px 0 0 28px;
+      transform: rotate(-10deg);
+    }
+    .logo .swoosh::before {
+      content: "";
+      position: absolute;
+      top: -6px;
+      right: -1px;
+      border-left: 8px solid #e31937;
+      border-top: 4px solid transparent;
+      border-bottom: 4px solid transparent;
+    }
+    .wef {
+      font-size: 13px;
+      font-weight: 700;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+      color: #111;
+    }
+
+    .title-banner {
+      background: #0d3d6e;
+      color: #fff;
+      text-align: center;
+      font-size: 15px;
+      font-weight: 800;
+      letter-spacing: 0.4px;
+      text-transform: uppercase;
+      padding: 11px 10px;
+      margin-top: 8px;
+    }
+
+    .hsn-wrap {
+      margin: 8px 0 6px;
+    }
+    .hsn {
+      display: inline-flex;
+      align-items: stretch;
+      background: #0d4f86;
+      color: #fff;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.3px;
+      box-shadow: -5px 0 0 #e31937;
+    }
+    .hsn .text {
+      padding: 6px 14px;
+    }
+
+    table.plist {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+      font-size: 10.5px;
+      background: #cfe4f5;
+    }
+    table.plist th,
+    table.plist td {
+      border: 1px solid #fff;
+      text-align: center;
+      vertical-align: middle;
+      padding: 5px 2px;
+      font-weight: 700;
+    }
+
+    /* Header colors matching original: alternate dark / medium blue */
+    .h-dark { background: #0d3d6e; color: #fff; }
+    .h-mid { background: #1a6fb5; color: #fff; }
+    .h-sub { background: #0d3d6e; color: #fff; font-size: 9px; padding: 3px 1px; }
+
+    tr.category td {
+      background: #1a6fb5;
+      color: #fff;
+      font-size: 12px;
+      font-weight: 800;
+      text-align: center;
+      padding: 6px 10px;
+    }
+
+    tr.data td {
+      background: #d7ebf8;
+      color: #000;
+      font-size: 10.5px;
+      padding: 6px 2px;
+    }
+
+    .col-sr { width: 4.5%; }
+    .col-series { width: 9%; }
+    .col-model { width: 16%; }
+    .col-ah { width: 7%; }
+    .col-w { width: 4.8%; }
+    .col-basic { width: 9%; }
+    .col-gst { width: 8%; }
+    .col-paid { width: 10%; }
+    .col-mrp { width: 8%; }
+
+    .terms {
+      margin-top: 12px;
+      padding: 0 6px 8px;
+      color: #0d3d6e;
+    }
+    .terms h3 {
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+    .terms ol {
+      margin-left: 18px;
+      font-size: 10.5px;
+      line-height: 1.45;
+      font-weight: 600;
+    }
+
+    .showcase {
+      position: relative;
+      margin-top: 6px;
+      background: #cfe6f7;
+      text-align: center;
+      padding: 8px 10px 0;
+      overflow: hidden;
+    }
+    .showcase img {
+      width: min(560px, 92%);
+      height: auto;
+      display: inline-block;
+      position: relative;
+      z-index: 1;
+    }
+    .showcase .wave {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 42px;
+      height: 28px;
+      background: #e31937;
+      clip-path: ellipse(70% 100% at 50% 100%);
+      z-index: 0;
+    }
+    .footer-bar {
+      background: #243a6b;
+      color: #fff;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 16px;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.4px;
+      margin-top: -2px;
+    }
+    .footer-bar a {
+      color: #fff;
+      text-decoration: none;
+      font-weight: 600;
+      text-transform: lowercase;
+      letter-spacing: 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="topbar">
+      <div class="logo" aria-label="MICROTEK">
+        <span class="swoosh" aria-hidden="true"></span>
+        <div class="name">MICROTEK</div>
+      </div>
+      <div class="wef">W.E.F.: 01/06/2026</div>
+    </div>
+
+    <div class="title-banner">Retailer Price List - Heavy Duty Inverter Battery New Range</div>
+
+    <div class="hsn-wrap"><div class="hsn"><span class="text">HSN CODE: 85072000</span></div></div>
+
+    <table class="plist">
+      <colgroup>
+        <col class="col-sr" />
+        <col class="col-series" />
+        <col class="col-model" />
+        <col class="col-ah" />
+        <col class="col-w" /><col class="col-w" /><col class="col-w" />
+        <col class="col-basic" />
+        <col class="col-gst" />
+        <col class="col-paid" />
+        <col class="col-mrp" />
+      </colgroup>
+      <thead>
+        <tr>
+          <th class="h-dark" rowspan="2">Sr. No.</th>
+          <th class="h-dark" rowspan="2">SERIES</th>
+          <th class="h-mid" rowspan="2">MICROTEK BATTERY MODEL</th>
+          <th class="h-mid" rowspan="2">CAPACITY<br />(AH)</th>
+          <th class="h-dark" colspan="3">WARRANTY</th>
+          <th class="h-mid" rowspan="2">BASIC<br />PRICE</th>
+          <th class="h-dark" rowspan="2">GST<br />@18%</th>
+          <th class="h-mid" rowspan="2">GST PAID<br />PRICE</th>
+          <th class="h-dark" rowspan="2">MRP</th>
+        </tr>
+        <tr>
+          <th class="h-sub">TOTAL</th>
+          <th class="h-sub">FLAT</th>
+          <th class="h-sub">PRORATA</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="category"><td colspan="11">Tall Tubular Battery (TT)</td></tr>
+        <tr class="data"><td>1</td><td>Dura Strong</td><td>M2503624TT NEW</td><td>250</td><td>60</td><td>36</td><td>24</td><td>18364</td><td>3306</td><td>21670</td><td>33440</td></tr>
+        <tr class="data"><td>2</td><td>Dura Strong</td><td>M2203624TT NEW</td><td>220</td><td>60</td><td>36</td><td>24</td><td>16173</td><td>2911</td><td>19084</td><td>28985</td></tr>
+        <tr class="data"><td>3</td><td>Dura Strong</td><td>M22003624TT NEW</td><td>220</td><td>60</td><td>36</td><td>24</td><td>16173</td><td>2911</td><td>19084</td><td>28985</td></tr>
+        <tr class="data"><td>4</td><td>Dura Strong</td><td>M220003624TT NEW</td><td>220</td><td>60</td><td>36</td><td>24</td><td>16173</td><td>2911</td><td>19084</td><td>29480</td></tr>
+        <tr class="data"><td>5</td><td>Dura Strong</td><td>M2003624TT NEW</td><td>200</td><td>60</td><td>36</td><td>24</td><td>14729</td><td>2651</td><td>17380</td><td>26730</td></tr>
+        <tr class="data"><td>6</td><td>Dura Strong</td><td>M20003624TT NEW</td><td>200</td><td>60</td><td>36</td><td>24</td><td>14729</td><td>2651</td><td>17380</td><td>27005</td></tr>
+        <tr class="data"><td>7</td><td>Dura Strong</td><td>M200003624TT NEW</td><td>200</td><td>60</td><td>36</td><td>24</td><td>14729</td><td>2651</td><td>17380</td><td>27225</td></tr>
+        <tr class="data"><td>8</td><td>Dura Strong</td><td>M1603624TT NEW</td><td>160</td><td>60</td><td>36</td><td>24</td><td>11653</td><td>2098</td><td>13751</td><td>20680</td></tr>
+        <tr class="data"><td>9</td><td>Dura Strong</td><td>M16003624 TT NEW</td><td>160</td><td>60</td><td>36</td><td>24</td><td>11653</td><td>2098</td><td>13751</td><td>20900</td></tr>
+        <tr class="data"><td>10</td><td>Dura Strong</td><td>M160003624TT NEW</td><td>160</td><td>60</td><td>36</td><td>24</td><td>11653</td><td>2098</td><td>13751</td><td>21175</td></tr>
+
+        <tr class="category"><td colspan="11">Jumbo Tubular Battery (JT)</td></tr>
+        <tr class="data"><td>11</td><td>Dura Long</td><td>M20002424JT NEW</td><td>200</td><td>48</td><td>24</td><td>24</td><td>12841</td><td>2311</td><td>15152</td><td>26389</td></tr>
+        <tr class="data"><td>12</td><td>Dura Long</td><td>M2002424JT NEW</td><td>200</td><td>48</td><td>24</td><td>24</td><td>12841</td><td>2311</td><td>15152</td><td>26114</td></tr>
+      </tbody>
+    </table>
+
+    <div class="terms">
+      <h3>Terms and Conditions:</h3>
+      <ol>
+        <li>The above Price List for Microtek Authorised Retailers is Valid all across India and supersedes all previous Price Lists.</li>
+        <li>GST and HSN Code Category-wise mentioned above.</li>
+        <li>Microtek International Pvt. Ltd., reserves right to change, alter or amend the above Price List any time without prior notice.</li>
+        <li>All Disputes if any are subject to the courts of Delhi Jurisdiction.</li>
+      </ol>
+    </div>
+
+    <div class="showcase">
+      <img src="assets/batteries-product.png" alt="Microtek Heavy Duty Tubular Batteries" />
+    </div>
+    <div class="footer-bar">
+      <span>MICROTEK INVERTER BATTERY</span>
+      <a href="https://www.microtek.in">www.microtek.in</a>
+    </div>
+  </div>
+</body>
+</html>
